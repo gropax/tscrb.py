@@ -91,11 +91,18 @@
             packages.${thisProjectAsNixPkg.pname} = self.packages.${system}.default;
 
 
-            apps.default = {
-              type = "app";
-              program = "${self.packages.${system}.default}/bin/${thisProjectAsNixPkg.pname}";
+            apps = builtins.listToAttrs (map
+              (bin: {
+                name = bin;
+                value = {
+                  type = "app";
+                  program = "${self.packages.${system}.default}/bin/${bin}";
+                };
+              })
+              [ "tscrb" "zboub" ]
+            ) // {
+              default = self.apps.${system}.${thisProjectAsNixPkg.pname};
             };
-            apps.${thisProjectAsNixPkg.pname} = self.apps.${system}.default;
           }
         );
   in
