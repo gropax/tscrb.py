@@ -60,13 +60,13 @@
           name = "tscrb";
           packages = [
             appPythonEnv
-            pkgs.python312
+            pkgs.python312  # Needed to add this for uv to find python in shell
             pkgs.ruff
             pkgs.uv
           ];
 
           shellHook = ''
-            uv sync --no-managed-python
+            uv sync
           '';
 
           # Needed for Jupyter Lab
@@ -92,9 +92,9 @@
             mkdir -p $out/bin
             cp main.py $out/bin/${thisProjectAsNixPkg.pname}-script
             chmod +x $out/bin/${thisProjectAsNixPkg.pname}-script
-             makeWrapper ${appPythonEnv}/bin/python $out/bin/${thisProjectAsNixPkg.pname} \
-               --add-flags $out/bin/${thisProjectAsNixPkg.pname}-script
-         '';
+            makeWrapper ${appPythonEnv}/bin/python $out/bin/${thisProjectAsNixPkg.pname} \
+              --add-flags $out/bin/${thisProjectAsNixPkg.pname}-script
+          '';
         };
         packages.${thisProjectAsNixPkg.pname} = self.packages.${system}.default;
 
