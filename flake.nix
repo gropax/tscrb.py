@@ -50,20 +50,20 @@
                 uvLockedOverlay  # Locked dependencies
               ]);
 
-            projectNameInToml = "tscrb";
-            thisProjectAsNixPkg = pythonSet.${projectNameInToml};
+            projectName = "tscrb";
+            binaries = [ "tscrb" "zboub" ];
+            projectPkg = pythonSet.${projectName};
 
-            appPythonEnv = pythonSet.mkVirtualEnv
-              (thisProjectAsNixPkg.pname + "-env")
-              workspace.deps.default;  # Uses deps from pyproject.toml [project.dependencies]
+            pythonEnvName = projectName + "-env";
+            pythonEnv = pythonSet.mkVirtualEnv pythonEnvName workspace.deps.default;
 
             inherit (pkgs.callPackages pyproject-nix.build.util { }) mkApplication;
 
           in {
             devShells.default = pkgs.mkShell {
-              name = "tscrb";
+              name = projectName;
               packages = [
-                appPythonEnv
+                pythonEnv
                 pkgs.python312  # FIXME: Needed to add this for uv to find python in shell
                 pkgs.ruff
                 pkgs.uv
@@ -85,10 +85,10 @@
 
 
             packages.default = mkApplication {
-              venv = appPythonEnv;
-              package = thisProjectAsNixPkg;
+              venv = pythonEnv;
+              package = projectPkg;
             };
-            packages.${thisProjectAsNixPkg.pname} = self.packages.${system}.default;
+            packages.${projectPkg.pname} = self.packages.${system}.default;
 
 
             apps = builtins.listToAttrs (map
@@ -99,9 +99,9 @@
                   program = "${self.packages.${system}.default}/bin/${bin}";
                 };
               })
-              [ "tscrb" "zboub" ]
+              binaries
             ) // {
-              default = self.apps.${system}.${thisProjectAsNixPkg.pname};
+              default = self.apps.${system}.${projectPkg.pname};
             };
           }
         );
