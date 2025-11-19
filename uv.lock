@@ -462,7 +462,7 @@ wheels = [
 [[package]]
 name = "tscrb"
 version = "0.1.1"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "mistralai" },
     { name = "openai" },

@@ -60,12 +60,13 @@
           name = "tscrb";
           packages = [
             appPythonEnv
+            pkgs.python312
             pkgs.ruff
             pkgs.uv
           ];
 
           shellHook = ''
-            uv sync
+            uv sync --no-managed-python
           '';
 
           # Needed for Jupyter Lab
@@ -75,26 +76,26 @@
           ];
 
           # Fix for opening tmux in nix-shell env
-          SHELL= "${pkgs.bashInteractive}/bin/bash";
+          SHELL = "${pkgs.bashInteractive}/bin/bash";
         };
 
-        packages.default = thisProjectAsNixPkg;
-        #packages.default = pkgs.stdenv.mkDerivation {
-        #  pname = thisProjectAsNixPkg.pname;
-        #  version = thisProjectAsNixPkg.version;
-        #  src = ./.;
-        #
-        #  nativeBuildInputs = [ pkgs.makeWrapper ];
-        #  buildInputs = [ appPythonEnv ];
-        #
-          #  installPhase = ''
-          #    mkdir -p $out/bin
-          #    cp main.py $out/bin/${thisProjectAsNixPkg.pname}-script
-          #    chmod +x $out/bin/${thisProjectAsNixPkg.pname}-script
-          #     makeWrapper ${appPythonEnv}/bin/python $out/bin/${thisProjectAsNixPkg.pname} \
-          #       --add-flags $out/bin/${thisProjectAsNixPkg.pname}-script
-        #   '';
-        # };
+        #packages.default = thisProjectAsNixPkg;
+        packages.default = pkgs.stdenv.mkDerivation {
+          pname = thisProjectAsNixPkg.pname;
+          version = thisProjectAsNixPkg.version;
+          src = ./.;
+        
+          nativeBuildInputs = [ pkgs.makeWrapper ];
+          buildInputs = [ appPythonEnv ];
+        
+          installPhase = ''
+            mkdir -p $out/bin
+            cp main.py $out/bin/${thisProjectAsNixPkg.pname}-script
+            chmod +x $out/bin/${thisProjectAsNixPkg.pname}-script
+             makeWrapper ${appPythonEnv}/bin/python $out/bin/${thisProjectAsNixPkg.pname} \
+               --add-flags $out/bin/${thisProjectAsNixPkg.pname}-script
+         '';
+        };
         packages.${thisProjectAsNixPkg.pname} = self.packages.${system}.default;
 
 
