@@ -17,7 +17,7 @@
 
           buildInputs = [
             pkgs.python312
-            pkgs.poetry
+            pkgs.uv
 
             pkgs.ffmpeg
           ];
@@ -35,7 +35,7 @@
           POETRY_VIRTUALENVS_IN_PROJECT = "1";
 
           shellHook = ''
-            poetry install
+            uv sync
           '';
         };
       });
