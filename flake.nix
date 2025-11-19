@@ -28,86 +28,78 @@
   };
 
   outputs = { self, nixpkgs, flake-utils, uv2nix, pyproject-nix, pyproject-build-systems, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let 
-        pkgs = import nixpkgs { inherit system; };
-        python = pkgs.python312;
+    let
+      mkPythonApp = { self, nixpkgs, flake-utils, uv2nix, pyproject-nix, pyproject-build-systems, ... }:
+        flake-utils.lib.eachDefaultSystem (system:
+          let 
+            pkgs = import nixpkgs { inherit system; };
+            python = pkgs.python312;
 
-        workspace = uv2nix.lib.workspace.loadWorkspace {
-          workspaceRoot = ./.;
-        };
+            workspace = uv2nix.lib.workspace.loadWorkspace {
+              workspaceRoot = ./.;
+            };
 
-        uvLockedOverlay = workspace.mkPyprojectOverlay {
-          sourcePreference = "wheel";  # Or "sdist" ??
-        };
+            uvLockedOverlay = workspace.mkPyprojectOverlay {
+              sourcePreference = "wheel";  # Or "sdist" ??
+            };
 
-        pythonSet =
-          (pkgs.callPackage pyproject-nix.build.packages { inherit python; })
-          .overrideScope (nixpkgs.lib.composeManyExtensions [
-            pyproject-build-systems.overlays.default  # Build tools
-            uvLockedOverlay  # Locked dependencies
-          ]);
+            pythonSet =
+              (pkgs.callPackage pyproject-nix.build.packages { inherit python; })
+              .overrideScope (nixpkgs.lib.composeManyExtensions [
+                pyproject-build-systems.overlays.default  # Build tools
+                uvLockedOverlay  # Locked dependencies
+              ]);
 
-        projectNameInToml = "tscrb";
-        thisProjectAsNixPkg = pythonSet.${projectNameInToml};
+            projectNameInToml = "tscrb";
+            thisProjectAsNixPkg = pythonSet.${projectNameInToml};
 
-        appPythonEnv = pythonSet.mkVirtualEnv
-          (thisProjectAsNixPkg.pname + "-env")
-          workspace.deps.default;  # Uses deps from pyproject.toml [project.dependencies]
+            appPythonEnv = pythonSet.mkVirtualEnv
+              (thisProjectAsNixPkg.pname + "-env")
+              workspace.deps.default;  # Uses deps from pyproject.toml [project.dependencies]
 
-      in {
-        devShells.default = pkgs.mkShell {
-          name = "tscrb";
-          packages = [
-            appPythonEnv
-            pkgs.python312  # Needed to add this for uv to find python in shell
-            pkgs.ruff
-            pkgs.uv
-          ];
+            inherit (pkgs.callPackages pyproject-nix.build.util { }) mkApplication;
 
-          shellHook = ''
-            uv sync
-          '';
+          in {
+            devShells.default = pkgs.mkShell {
+              name = "tscrb";
+              packages = [
+                appPythonEnv
+                pkgs.python312  # FIXME: Needed to add this for uv to find python in shell
+                pkgs.ruff
+                pkgs.uv
+              ];
 
-          # Needed for Jupyter Lab
-          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [
-            pkgs.stdenv.cc.cc.lib
-            pkgs.zeromq
-          ];
+              shellHook = ''
+                uv sync
+              '';
 
-          # Fix for opening tmux in nix-shell env
-          SHELL = "${pkgs.bashInteractive}/bin/bash";
-        };
+              # Needed for Jupyter Lab
+              LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [
+                pkgs.stdenv.cc.cc.lib
+                pkgs.zeromq
+              ];
 
-        #packages.default = thisProjectAsNixPkg;
-        packages.default = pkgs.stdenv.mkDerivation {
-          pname = thisProjectAsNixPkg.pname;
-          version = thisProjectAsNixPkg.version;
-          src = ./.;
-        
-          nativeBuildInputs = [ pkgs.makeWrapper ];
-          buildInputs = [ appPythonEnv ];
-        
-          installPhase = ''
-            mkdir -p $out/bin
-            cp main.py $out/bin/${thisProjectAsNixPkg.pname}-script
-            chmod +x $out/bin/${thisProjectAsNixPkg.pname}-script
-            makeWrapper ${appPythonEnv}/bin/python $out/bin/${thisProjectAsNixPkg.pname} \
-              --add-flags $out/bin/${thisProjectAsNixPkg.pname}-script
-          '';
-        };
-        packages.${thisProjectAsNixPkg.pname} = self.packages.${system}.default;
+              # Fix for opening tmux in nix-shell env
+              SHELL = "${pkgs.bashInteractive}/bin/bash";
+            };
 
 
-        #apps.default = flake-utils.lib.mkApp {
-        #  drv = thisProjectAsNixPkg;
-        #  name = "tscrb";
-        #};
-        apps.default = {
-          type = "app";
-          program = "${self.packages.${system}.default}/bin/${thisProjectAsNixPkg.pname}";
-        };
-        apps.${thisProjectAsNixPkg.pname} = self.apps.${system}.default;
-      }
-    );
+            packages.default = mkApplication {
+              venv = appPythonEnv;
+              package = thisProjectAsNixPkg;
+            };
+            packages.${thisProjectAsNixPkg.pname} = self.packages.${system}.default;
+
+
+            apps.default = {
+              type = "app";
+              program = "${self.packages.${system}.default}/bin/${thisProjectAsNixPkg.pname}";
+            };
+            apps.${thisProjectAsNixPkg.pname} = self.apps.${system}.default;
+          }
+        );
+  in
+    mkPythonApp {
+      inherit self nixpkgs flake-utils uv2nix pyproject-nix pyproject-build-systems;
+    };
 }
