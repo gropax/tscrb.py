@@ -38,7 +38,7 @@ def create_model_getter(mistral_models, openai_models):
             provider = AIProvider.mistral
             if not use_model:
                 model = mistral_models.DEFAULT
-            elif is_known_model(use_model, mistral_models):
+            elif is_known_model(mistral_models, use_model):
                 model = use_model
             else:
                 raise typer.BadParameter(f"Unknown Mistral model: {use_model}.")
@@ -47,15 +47,15 @@ def create_model_getter(mistral_models, openai_models):
             provider = AIProvider.openai
             if not use_model:
                 model = openai_models.DEFAULT
-            elif is_known_model(use_model, openai_models):
+            elif is_known_model(openai_models, use_model):
                 model = use_model
             else:
                 raise typer.BadParameter(f"Unknown OpenAI model: {use_model}.")
 
         elif use_model:
-            if is_known_model(use_model, mistral_models):
+            if is_known_model(mistral_models, use_model):
                 provider = AIProvider.mistral
-            elif is_known_model(use_model, openai_models):
+            elif is_known_model(openai_models, use_model):
                 provider = AIProvider.openai
             else:
                 raise typer.BadParameter(f"Unknown model: {use_model}.")
