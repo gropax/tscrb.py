@@ -1,0 +1,3 @@
+
+def app():
+    print("Ideolog!")

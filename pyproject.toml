@@ -11,8 +11,8 @@ dependencies = [
 ]
 
 [project.scripts]
-tscrb = "tscrb.cli:app"
-zboub = "tscrb.test:app"
+tscrb = "tscrb.commands.tscrb:app"
+ideolog = "tscrb.commands.ideolog:app"
 
 [tool.uv]
 package = true

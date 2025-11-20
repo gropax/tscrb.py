@@ -16,7 +16,7 @@
         (pkgs: pkgs.python312)  # python version
         "tscrb"                 # pyproject project name 
         ./.                     # project dir
-        [ "tscrb" "zboub" ];    # pyproject.scripts
+        [ "tscrb" "ideolog" ];    # pyproject.scripts
     in
     {
       devShells = base.devShells;
