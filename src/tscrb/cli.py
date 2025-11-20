@@ -24,8 +24,10 @@ def is_known_model(provider, model):
 def get_model(use_mistral, use_openai, use_model):
     if use_mistral and use_openai:
         raise typer.BadParameter(f"Multiple AI provider specified.")
+    elif not (use_mistral or use_openai or use_model):
+        use_mistral = True
 
-    elif use_mistral:
+    if use_mistral:
         provider = "Mistral"
         if not use_model:
             model = DEFAULT_MISTRAL_MODEL
