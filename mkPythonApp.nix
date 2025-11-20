@@ -1,10 +1,10 @@
 { self, nixpkgs, flake-utils, uv2nix, pyproject-nix, pyproject-build-systems, ... }:
 
 pythonGetter: projectName: binaries:
+
   flake-utils.lib.eachDefaultSystem (system:
     let 
       pkgs = import nixpkgs { inherit system; };
-    #python = pkgs.python312;
       python = pythonGetter pkgs;
 
       workspace = uv2nix.lib.workspace.loadWorkspace {
@@ -22,8 +22,7 @@ pythonGetter: projectName: binaries:
           uvLockedOverlay  # Locked dependencies
         ]);
 
-    #projectName = "tscrb";
-    #binaries = [ "tscrb" "zboub" ];
+      defaultBinary = builtins.head binaries;
       projectPkg = pythonSet.${projectName};
 
       pythonEnvName = projectName + "-env";
@@ -36,7 +35,7 @@ pythonGetter: projectName: binaries:
         name = projectName;
         packages = [
           pythonEnv
-          pkgs.python312  # FIXME: Needed to add this for uv to find python in shell
+          python  # FIXME: Needed to add this for uv to find python in shell
           pkgs.ruff
           pkgs.uv
         ];
@@ -73,7 +72,7 @@ pythonGetter: projectName: binaries:
         })
         binaries
       ) // {
-        default = self.apps.${system}.${projectPkg.pname};
+        default = self.apps.${system}.${defaultBinary};
       };
     }
   )
