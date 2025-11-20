@@ -3,7 +3,7 @@ import os
 import typer
 from enum import Enum
 from pathlib import Path
-from tscrb import *
+from tscrb.transcription import MistralModel, OpenAIModel, MistralTranscriber, OpenAITranscriber
 
 
 DEFAULT_MISTRAL_MODEL = MistralModel.voxtral_mini
