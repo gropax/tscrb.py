@@ -3,38 +3,24 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
-    flake-utils.url = "github:numtide/flake-utils";
 
-    pyproject-nix = {
-      url = "github:pyproject-nix/pyproject.nix";
+    python-utils = {
+      url = "github:gropax/python-utils.nix";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    uv2nix = {
-      url = "github:pyproject-nix/uv2nix";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        pyproject-nix.follows = "pyproject-nix";
-      };
-    };
-
-    pyproject-build-systems = {
-      url = "github:pyproject-nix/build-system-pkgs";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        pyproject-nix.follows = "pyproject-nix";
-      };
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, uv2nix, pyproject-nix, pyproject-build-systems, ... }: let
-    mkPythonApp = import ./mkPythonApp.nix {
-      inherit self nixpkgs flake-utils uv2nix pyproject-nix pyproject-build-systems;
+  outputs = { self, python-utils, ... }:
+    let
+      base = python-utils.lib.mkPythonApp
+        (pkgs: pkgs.python312)  # python version
+        "tscrb"                 # pyproject project name 
+        ./.                     # project dir
+        [ "tscrb" "zboub" ];    # pyproject.scripts
+    in
+    {
+      devShells = base.devShells;
+      packages = base.packages;
+      apps = base.apps;
     };
-
-  in
-    mkPythonApp
-      (pkgs: pkgs.python312)  # python version
-      "tscrb"                 # pyproject project name 
-      [ "tscrb" "zboub" ];    # pyproject.scripts
 }

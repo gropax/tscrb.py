@@ -37,9 +37,11 @@
     "pyproject-build-systems": {
       "inputs": {
         "nixpkgs": [
+          "python-utils",
           "nixpkgs"
         ],
         "pyproject-nix": [
+          "python-utils",
           "pyproject-nix"
         ],
         "uv2nix": "uv2nix"
@@ -61,6 +63,7 @@
     "pyproject-nix": {
       "inputs": {
         "nixpkgs": [
+          "python-utils",
           "nixpkgs"
         ]
       },
@@ -78,13 +81,34 @@
         "type": "github"
       }
     },
-    "root": {
+    "python-utils": {
       "inputs": {
         "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs",
+        "nixpkgs": [
+          "nixpkgs"
+        ],
         "pyproject-build-systems": "pyproject-build-systems",
         "pyproject-nix": "pyproject-nix",
         "uv2nix": "uv2nix_2"
+      },
+      "locked": {
+        "lastModified": 1763630026,
+        "narHash": "sha256-nF+m++uD1XqlxxpN+zQFF/7V+vHDP5WL8fAIShy6cjQ=",
+        "owner": "gropax",
+        "repo": "python-utils.nix",
+        "rev": "af4016b5e94e28cb27e4abfb3bc36d5d49723a20",
+        "type": "github"
+      },
+      "original": {
+        "owner": "gropax",
+        "repo": "python-utils.nix",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "nixpkgs": "nixpkgs",
+        "python-utils": "python-utils"
       }
     },
     "systems": {
@@ -105,10 +129,12 @@
     "uv2nix": {
       "inputs": {
         "nixpkgs": [
+          "python-utils",
           "pyproject-build-systems",
           "nixpkgs"
         ],
         "pyproject-nix": [
+          "python-utils",
           "pyproject-build-systems",
           "pyproject-nix"
         ]
@@ -130,9 +156,11 @@
     "uv2nix_2": {
       "inputs": {
         "nixpkgs": [
+          "python-utils",
           "nixpkgs"
         ],
         "pyproject-nix": [
+          "python-utils",
           "pyproject-nix"
         ]
       },
